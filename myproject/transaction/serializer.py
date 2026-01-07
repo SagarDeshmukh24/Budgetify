@@ -6,12 +6,13 @@ from expense.models import Expense
 
 class TransactionSerializer(serializers.ModelSerializer):
     transaction_id = serializers.CharField(max_length=50)
-    date = serializers.DateTimeField(read_only=True)  # Auto set by `auto_now_add`, so it's read-only
-    credit_amt = serializers.IntegerField()
-    debit_amt = serializers.IntegerField()
+    date = serializers.DateTimeField(read_only=True)
+    credit_amt = serializers.IntegerField(default=0)
+    debit_amt = serializers.IntegerField(default=0)
+
     customer_id = serializers.PrimaryKeyRelatedField(queryset=Customer.objects.all())
-    deposit_type_id = serializers.PrimaryKeyRelatedField(queryset=Deposite.objects.all())
-    expense_type_id = serializers.PrimaryKeyRelatedField(queryset=Expense.objects.all())
+    deposite_id = serializers.PrimaryKeyRelatedField(queryset=Deposite.objects.all())
+    expense_id = serializers.PrimaryKeyRelatedField(queryset=Expense.objects.all())
 
     class Meta:
         model = Transaction

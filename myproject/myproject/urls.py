@@ -40,6 +40,7 @@ def home(request):
     return HttpResponse("Welcome to the Customer API! Use /customer/ to interact with the API.")
 
 urlpatterns = [
+    path('', home),
     path('admin/', admin.site.urls),  # Admin URL
     path('customer/', include('customer.urls')),  # Your app's customer URLs
     path('user/', include('user.urls')), 

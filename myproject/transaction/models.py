@@ -8,20 +8,24 @@ from expense.models import Expense
 class Transaction(models.Model):
     transaction_id = models.CharField(max_length=50)
     date = models.DateTimeField(auto_now_add=True)
-    credit_amt = models.IntegerField()
-    debit_amt = models.IntegerField()
+    credit_amt = models.IntegerField(default=0)
+    debit_amt = models.IntegerField(default=0)
+
     customer_id = models.ForeignKey(
         Customer,
         on_delete=models.CASCADE,
-        related_name="customer_id"
+        related_name="f_customer_id",
+        default=0
     )
-    deposit_type_id = models.ForeignKey(
+    deposite_id = models.ForeignKey(
         Deposite,
         on_delete=models.CASCADE,
-        related_name="deposite_type_id"
+        related_name="f_deposite_id",
+        default=0
     )
-    expense_type_id = models.ForeignKey(
+    expense_id = models.ForeignKey(
         Expense,
         on_delete=models.CASCADE,
-        related_name="expense_type_id"
+        related_name="f_expense_id",
+        default=0
     )
