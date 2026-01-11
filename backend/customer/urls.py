@@ -16,17 +16,14 @@ Including another URLconf
 """
 
 from django.urls import path
-from .views import CustomerAPI
+from .views import CustomerAPI, LoginAPI
 from . import views
 
 urlpatterns = [
     path('', CustomerAPI.as_view(), name='root'),
     path('customer/', views.CustomerAPI.as_view(), name='customer_api'),
-    path('<int:id>/', CustomerAPI.as_view(), name='customer_detail'), 
-
-
-# wrong =>
-    # path('', views.get, name='CustomerAPI'),
-    # path("customer", views.get, name="customer"),
-    # path("", views.get, name="customer"),
+    path('<int:id>/', CustomerAPI.as_view(), name='customer_detail'),
+    path('login/',LoginAPI.as_view(), name='login'),
+    path('register/',views.CustomerAPI.as_view(), name='customer_api'),
 ]
+

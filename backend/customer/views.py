@@ -1,6 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from django.contrib.auth.hashers import check_password
 
 from .models import Customer
 from .serializer import CustomerSerializer
@@ -51,3 +52,52 @@ class CustomerAPI(APIView):
             return Response({'error': "Not Found"}, status=status.HTTP_404_NOT_FOUND)
         customer.delete()
         return Response({"message": "Customer Deleted"}, status=status.HTTP_204_NO_CONTENT)
+
+class LoginAPI(APIView):
+
+    def post(self, request):
+        email = request.data.get('email')
+        password = request.data.get('password')
+
+        if not email or not password:
+            return Response(
+                {"error": "Email and password are required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            customer = Customer.objects.get(email=email)
+
+            serializer = CustomerSerializer(customer)
+            # return Response(serializer.data)
+            print(serializer.data)
+            print(customer.password, customer.phone)
+
+            # if password == serializer.data.password:
+            if password == customer.password or check_password(password, customer.password):
+                return Response(
+                    {
+                        "message": "Login successful",
+                        "user": serializer.data,
+                        "redirect_url": "http://127.0.0.1:5500/frontend/customer/customer.html"
+                        # "user": {
+                        #     "id": serializer.data.id,
+                        #     "name": serializer.data.name,
+                        #     "email": serializer.data.email,
+                        #     "phone": serializer.data.phone,
+                        #     "type": serializer.data.type,
+                        #     "created_at": serializer.data.created_at
+                        # }
+                    },
+                    status=status.HTTP_200_OK
+                )
+            else: 
+                return Response(
+                    {"error": "Customer not found"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+        except Customer.DoesNotExist:
+            return Response(
+                {"error": "Customer only not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )    
