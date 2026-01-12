@@ -16,7 +16,7 @@ Including another URLconf
 """
 
 from django.urls import path
-from .views import UserAPI, LoginAPI
+from .views import UserAPI, LoginAPI, forgot_password, reset_password, verify_otp
 from . import views
 
 urlpatterns = [
@@ -25,6 +25,9 @@ urlpatterns = [
     path('<int:id>/', UserAPI.as_view(), name='_detail'),
     path('login/', LoginAPI.as_view(), name='login'),
     path('register/', views.UserAPI.as_view(), name='user_api'),
+    path('forgot_password/',forgot_password, name='forgot_password'),
+    path('reset-password/',reset_password, name='reset-password'),
+    path('verify_otp/',verify_otp, name='verify_otp'),
 
 
 

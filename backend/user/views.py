@@ -2,11 +2,110 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth.hashers import check_password
+import requests
+import random
+import json
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
 
 from .models import User
 from .serializer import UserSerializer
 
 # Create your views here.
+BOT_TOKEN = "7657831643:AAEUHfryt9fUzHsXShtiOtn7U3D9_Wj1ysg"
+CHAT_ID = "8029148711"
+
+def send_telegram_message(message):
+    url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
+    data = {
+        "chat_id": CHAT_ID,
+        "text": message
+    }
+    requests.post(url, data=data)
+
+@csrf_exempt
+def forgot_password(request):
+    if request.method == "POST":
+
+        data = json.loads(request.body)
+        email = data.get("email")
+
+        # 1️⃣ email exist hai ya nahi
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return JsonResponse(
+                {"error": "Email not registered"},
+                status=400
+            )
+
+        # 2️⃣ OTP generate
+        otp = random.randint(100000, 999999)
+
+        # 3️⃣ OTP DB me save
+        user.reset_otp = otp
+        user.save()
+
+        # 4️⃣ Telegram pe OTP bhejo
+        send_telegram_message(
+            f"Your password reset OTP is: {otp}"
+        )
+
+        # 5️⃣ response
+        return JsonResponse(
+            {"message": "OTP sent to Telegram"}
+        )
+    
+@csrf_exempt
+def verify_otp(request):
+    if request.method == "POST":
+
+        data = json.loads(request.body)
+        email = data.get("email")
+        otp = data.get("otp")
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return JsonResponse(
+                {"error": "Invalid email"},
+                status=400
+            )
+
+        if str(user.reset_otp) != str(otp):
+            return JsonResponse(
+                {"error": "Invalid OTP"},
+                status=400,
+            )
+
+        return JsonResponse(
+            {"message": "OTP verified"}
+        )
+
+@csrf_exempt
+def reset_password(request):
+    if request.method == "POST":
+
+        data = json.loads(request.body)
+        email = data.get("email")
+        new_password = data.get("password")
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return JsonResponse(
+                {"error": "Invalid email"},
+                status=400
+            )
+
+        # password update
+        user.password = new_password
+        user.reset_otp = None
+        user.save()
+
+        return JsonResponse(
+            {"message": "Password reset successful"}
+        )
 
 class UserAPI(APIView):
     
@@ -100,25 +199,3 @@ class LoginAPI(APIView):
                 {"error": "User not found"},
                 status=status.HTTP_404_NOT_FOUND
             )
-
-        # if not check_password(password, user.password):
-        if password != user.password:
-            return Response(
-                {"error": "Invalid credentials"},
-                status=status.HTTP_401_UNAUTHORIZED
-            )
-
-        return Response(
-            {
-                "message": "Login successful",
-                "user": {
-                    "id": user.id,
-                    "name": user.name,
-                    "email": user.email,
-                    "phone": user.phone,
-                    "type": user.type,
-                    "created_at": user.created_at
-                }
-            },
-            status=status.HTTP_200_OK
-        )

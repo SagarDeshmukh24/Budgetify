@@ -79,7 +79,7 @@ class LoginAPI(APIView):
                     {
                         "message": "Login successful",
                         "user": serializer.data,
-                        "redirect_url": "http://127.0.0.1:5500/frontend/customer/customer.html"
+                        "redirect_url": "http://127.0.0.1:5500/frontend/Home.html"
                         # "user": {
                         #     "id": serializer.data.id,
                         #     "name": serializer.data.name,
