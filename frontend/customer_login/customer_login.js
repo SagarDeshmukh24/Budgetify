@@ -30,10 +30,10 @@ app.controller('LoginController', function ($scope, $http) {
         $scope.data = response.data; // Store the response data (user details)
         console.log(response.data);
         //if (response.data.message === "login successfull"){
-        ////localStorage.setItem("token", response.data.token); //token liya hai kyu ki aise hi koi dashboard use na kre 
+        localStorage.setItem("token", response.data.token); //token liya hai kyu ki aise hi koi dashboard use na kre 
         localStorage.setItem("username", $scope.user.email); //dashboard pe user show krta hai i.e login email
         console.log("Login response:",response.data);
-        window.location.href ="http://127.0.0.1:5500/frontend/Home/Home.html";   //after successfully login redirect to the user.html pge 
+        window.location.href ="/frontend/dashboard/dashboard.html";   //after successfully login redirect to the user.html pge 
       //  }
       }, function (error) {
         $scope.message = 'Login failed'; // Handle login error
