@@ -32,6 +32,37 @@ a {
 }
 
 /* NAVBAR */
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Logo */
+.logo {
+  font-size: 34px;       /* Bigger & premium */
+  font-weight: 700;
+  margin: 0;
+}
+
+/* Right side links */
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.nav-right a {
+  text-decoration: none;
+  font-weight: 500;
+  color: inherit;
+}
+
+/* Optional hover polish */
+.nav-right a:hover {
+  opacity: 0.8;
+}
+
 header {
   position: fixed;
   width: 100%;
@@ -48,16 +79,6 @@ header {
   padding: 20px 0;
 }
 
-.nav h1 {
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-}
-
-.nav a {
-  margin-left: 24px;
-  font-weight: 500;
-}
 
 .btn {
   padding: 12px 22px;

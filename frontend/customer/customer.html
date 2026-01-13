@@ -76,8 +76,8 @@
                         <input type="text" class="form-control" id="phone" ng-model="newUser.phone">
                     </div>
                     <div class="col-md-6">
-                        <label for="address" class="form-label">Address</label>
-                        <input type="text" class="form-control" id="address" ng-model="newUser.address">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="text" class="form-control" id="password" ng-model="newUser.password">
                     </div>
                     <div class="col-12">
                         <button type="submit" class="btn btn-primary">Add Customer</button>
@@ -100,7 +100,7 @@
                                 <th>Name</th>
                                 <th>Email</th>
                                 <th>Phone</th>
-                                <th>Address</th>
+                                <th>Password</th>
                                 <th>Active</th>
                                 <th>Actions</th>
                             </tr>
@@ -122,8 +122,8 @@
                                     <input type="text" class="form-control" ng-model="user.phone" ng-show="user.editing">
                                 </td>
                                 <td>
-                                    <span ng-hide="user.editing">{{ user.address }}</span>
-                                    <input type="text" class="form-control" ng-model="user.address" ng-show="user.editing">
+                                    <span ng-hide="user.editing">{{ user.password }}</span>
+                                    <input type="text" class="form-control" ng-model="user.password" ng-show="user.editing">
                                 </td>
                                 <td>
                                     <span class="badge bg-success" ng-if="user.is_active">Active</span>

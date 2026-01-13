@@ -21,12 +21,12 @@ app.controller("DashboardCtrl", function ($scope) {
 
     $scope.logout = function () {
   localStorage.clear();   // ya sessionStorage.clear()
-  window.location.href = "http://127.0.0.1:5500/frontend/login/login.html";
+  window.location.href = "http://127.0.0.1:5500/frontend/customer_login/customer_login.html";
 };
 
   // TEMP STATIC DATA (backend abhi nahi)
-  $scope.totalIncome = 30000;
-  $scope.totalExpense = 12000;
+  $scope.totalIncome = 20000;
+  $scope.totalExpense = 20000;
   $scope.savings = $scope.totalIncome - $scope.totalExpense;
 
   $scope.recentTransactions = [

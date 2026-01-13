@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="registerApp">
+<head>
+  <meta charset="UTF-8">
+  <title>Create Account – Budgetwala</title>
+
+  <!-- Keep same CSS -->
+  <link rel="stylesheet" href="/frontend/Home/styles.css">
+
+  <!-- AngularJS -->
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+
+  <!-- Register JS -->
+  <script src="customer_register.js"></script>
+</head>
+<body ng-controller="RegisterController">
+
+<section class="auth">
+
+  <!-- Wrapper to stack title and box vertically -->
+  <div style="display:flex; flex-direction:column; align-items:center;">
+
+    <!-- Brand -->
+    <h1 style="color:rgb(203, 157, 203); margin-bottom:15px; font-weight:600;">
+      Budgetwala
+    </h1>
+
+    <!-- Registration Box -->
+    <div class="auth-box">
+
+      <h2>Create your account</h2>
+      <p>Start your journey to financial clarity.</p>
+
+      <form ng-submit="register()">
+
+        <input type="text"
+               placeholder="Name"
+               ng-model="user.name"
+               required>
+
+        <input type="text"
+               placeholder="Phone"
+               ng-model="user.phone"
+               required>
+
+        <input type="email"
+               placeholder="Email"
+               ng-model="user.email"
+               required>
+
+        <input type="password"
+               placeholder="Password"
+               ng-model="user.password"
+               ng-change="checkPassword()"
+               required>
+
+        <input type="password"
+               placeholder="Re-enter Password"
+               ng-model="user.repassword"
+               ng-change="checkPassword()"
+               required>
+
+        <!-- Password match message -->
+        <p ng-if="passwordStatus"
+           style="font-size:12px; margin-top:5px;"
+           ng-style="{'color': passwordMatched ? 'green' : 'red'}">
+          {{ passwordStatus }}
+        </p>
+
+        <button class="btn"
+                style="width:100%"
+                ng-disabled="!passwordMatched">
+          Create Account
+        </button>
+      </form>
+
+      <!-- Login link -->
+      <p style="text-align:center; margin-top:15px; font-size:14px;">
+        Already have an account?
+        <a href="/frontend/customer_login/customer_login.html"
+           style="color:#4da3ff; text-decoration:none; font-weight:500;">
+          Login
+        </a>
+      </p>
+
+      <!-- Backend message -->
+      <p style="margin-top:10px; color:green;" ng-if="message">
+        {{ message }}
+      </p>
+
+    </div>
+  </div>
+</section>
+
+</body>
+</html>

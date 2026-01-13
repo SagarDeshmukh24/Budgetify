@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="otpApp">
+<head>
+  <meta charset="UTF-8">
+  <title>Verify OTP – Budgetwala</title>
+
+  <link rel="stylesheet" href="/frontend/Home/styles.css">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+  <script src="verify_otp.js"></script>
+</head>
+<body ng-controller="OtpController">
+
+<section class="auth">
+  <div class="auth-box">
+
+    <h2>Verify OTP</h2>
+    <p>Enter the OTP sent to your Telegram</p>
+
+    <form ng-submit="verifyOtp()">
+      <input type="text"
+             placeholder="Enter OTP"
+             ng-model="otp"
+             required>
+
+      <button class="btn" style="width:100%">
+        Verify OTP
+      </button>
+    </form>
+
+    <p style="color:green" ng-if="message">{{ message }}</p>
+    <p style="color:red" ng-if="error">{{ error }}</p>
+
+  </div>
+</section>
+
+</body>
+</html>
