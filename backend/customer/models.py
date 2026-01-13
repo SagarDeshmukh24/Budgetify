@@ -5,7 +5,8 @@ class Customer(models.Model):
     email = models.EmailField()
     phone = models.CharField(max_length= 10)
     password = models.CharField(max_length=20, default='')
-    place = models.CharField(max_length=50, default='')
+    type = models.CharField(max_length=50, default='')
+    reset_otp = models.IntegerField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add = True)
 
     def __str__(self):

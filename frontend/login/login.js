@@ -29,6 +29,13 @@ app.controller('LoginController', function ($scope, $http) {
         $scope.message = response.data.message; // Display login success message
         $scope.data = response.data; // Store the response data (user details)
         console.log(response.data);
+       //if (response.data.message === "login successfull"){
+          localStorage.setItem("token", response.data.token); //token liya hai kyu ki aise hi koi dashboard use na kre 
+          localStorage.setItem("username", $scope.user.email); //dashboard pe user show krta hai i.e login email
+          console.log("Login response:",response.data);
+       
+           window.location.href ="http://127.0.0.1:5500/frontend/dashboard/dashboard.html";   //after successfully login redirect to the user.html pge 
+      //  }
       }, function (error) {
         $scope.message = 'Login failed'; // Handle login error
         console.error(error);
@@ -46,6 +53,7 @@ app.controller('LoginController', function ($scope, $http) {
         $scope.message = response.data.message; // Display registration success message
         $scope.data = response.data;  // Store user data (response)
         console.log(response.data);   // Debug the response data
+         window.location.href ="/frontend/login/login.html"; //redirect to login page
       }, function (error) {
         $scope.message = 'Registration failed'; // Handle registration error
         console.error(error);

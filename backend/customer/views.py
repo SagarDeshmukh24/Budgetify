@@ -2,6 +2,11 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth.hashers import check_password
+import requests
+import random
+import json
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
 
 from .models import Customer
 from .serializer import CustomerSerializer
@@ -54,7 +59,6 @@ class CustomerAPI(APIView):
         return Response({"message": "Customer Deleted"}, status=status.HTTP_204_NO_CONTENT)
 
 class LoginAPI(APIView):
-
     def post(self, request):
         email = request.data.get('email')
         password = request.data.get('password')
@@ -67,19 +71,18 @@ class LoginAPI(APIView):
 
         try:
             customer = Customer.objects.get(email=email)
-
+            
             serializer = CustomerSerializer(customer)
             # return Response(serializer.data)
             print(serializer.data)
             print(customer.password, customer.phone)
-
+        
             # if password == serializer.data.password:
             if password == customer.password or check_password(password, customer.password):
                 return Response(
                     {
                         "message": "Login successful",
-                        "user": serializer.data,
-                        "redirect_url": "http://127.0.0.1:5500/frontend/Home.html"
+                        "user": serializer.data
                         # "user": {
                         #     "id": serializer.data.id,
                         #     "name": serializer.data.name,
@@ -93,11 +96,11 @@ class LoginAPI(APIView):
                 )
             else: 
                 return Response(
-                    {"error": "Customer not found"},
+                    {"error": "User not found"},
                     status=status.HTTP_404_NOT_FOUND
                 )
         except Customer.DoesNotExist:
             return Response(
-                {"error": "Customer only not found"},
+                {"error": "User not found"},
                 status=status.HTTP_404_NOT_FOUND
-            )    
+            )

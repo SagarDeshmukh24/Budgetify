@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>{{ isLogin ? 'Login' : 'Register' }}</title>
+  <link rel="stylesheet" href="login.css">
 
   <!-- Bootstrap CSS -->
   <link
@@ -18,12 +19,12 @@
 <body ng-controller="LoginController">
 
 <div class="container mt-5" style="max-width: 400px;">
-  <h3 class="text-center mb-4"> {{ isLogin ? 'Login' : 'Register' }} </h3>
+  <h3 class="text-center mb-4", style="color: aliceblue;"> {{ isLogin ? 'Login' : 'Register' }} </h3>
 
   <form ng-submit="submitForm($event)">  <!-- Passing event to submitForm -->
     <!-- Name field (only visible during registration) -->
     <div class="mb-3" ng-if="!isLogin">
-      <label>Name</label>
+      <label style="color: aliceblue;">Name</label>
       <input type="text"
              class="form-control"
              ng-model="user.name"
@@ -32,7 +33,7 @@
 
     <!-- Email field (always visible) -->
     <div class="mb-3">
-      <label>Email</label>
+      <label style="color: aliceblue;">Email</label>
       <input type="email"
              class="form-control"
              ng-model="user.email"
@@ -41,7 +42,7 @@
 
     <!-- Password field -->
     <div class="mb-3">
-      <label>Password</label>
+      <label style="color: aliceblue;">Password</label>
       <input type="password"
              class="form-control"
              ng-model="user.password"
@@ -50,7 +51,7 @@
 
     <!-- Phone field (only visible during registration) -->
     <div class="mb-3" ng-if="!isLogin">
-      <label>Phone</label>
+      <label style="color: aliceblue;">Phone</label>
       <input type="text"
              class="form-control"
              ng-model="user.phone"
@@ -59,7 +60,7 @@
 
     <!-- Type field (only visible during registration) -->
     <div class="mb-3" ng-if="!isLogin">
-      <label>Type</label>
+      <label style="color: aliceblue;">Type</label>
       <input type="text"
              class="form-control"
              ng-model="user.type"
@@ -84,7 +85,7 @@
   </div>
 
   <!-- Display the registration response data in a table format -->
-  <div class="mt-3" ng-if="data && !isLogin">
+  <!-- <div class="mt-3" ng-if="data && !isLogin">
     <h4>User Data</h4>
     <table class="table table-bordered">
       <thead>
@@ -118,7 +119,7 @@
     </table>
   </div>
 
-</div>
+</div> -->
 
 <!-- Link to login.js -->
 <script src="login.js"></script>
