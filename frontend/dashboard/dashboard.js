@@ -6,23 +6,22 @@ if (!token) {
 var app = angular.module("myApp", []);
 
 app.controller("DashboardCtrl", function ($scope) {
+  localStorage.setItem("token", response.data.token); //token liya hai kyu ki aise hi koi dashboard use na kre 
+  localStorage.setItem("username", response.data.username);
 
-    // localStorage.setItem("token", response.data.token); //token liya hai kyu ki aise hi koi dashboard use na kre 
-    // localStorage.setItem("username", response.data.username);
-
-    if (!localStorage.getItem("token")) {   // ye token use kiya hai kyu ki aise hi koi dashboard use na kre 
-      sessionStorage.clear()
+  if (!localStorage.getItem("token")) {   // ye token use kiya hai kyu ki aise hi koi dashboard use na kre 
+    sessionStorage.clear()
     window.location.href = "http://127.0.0.1:5500/frontend/login/login.html";
-}
+  }
 
-    $scope.username = localStorage.getItem("username");
+  $scope.username = localStorage.getItem("username");
 
-//LOGOUT FUNCTION
+  //LOGOUT FUNCTION
 
-    $scope.logout = function () {
-  localStorage.clear();   // ya sessionStorage.clear()
-  window.location.href = "http://127.0.0.1:5500/frontend/customer_login/customer_login.html";
-};
+  $scope.logout = function () {
+    localStorage.clear();   // ya sessionStorage.clear()
+    window.location.href = "http://127.0.0.1:5500/frontend/customer_login/customer_login.html";
+  };
 
   // TEMP STATIC DATA (backend abhi nahi)
   $scope.totalIncome = 20000;

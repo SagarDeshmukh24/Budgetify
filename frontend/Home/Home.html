@@ -16,7 +16,7 @@
     <!-- Right -->
     <nav class="nav-right">
       <a href="/frontend/Home/about.html">About Us</a>
-      <a href="https://news.google.com/search?q=personal+finance+india" target="_blank">Financial News</a>
+      <a href="https://www.ft.com/personal-finance" target="_blank">Financial News</a>
       <a href="/frontend/customer_login/customer_login.html" class="btn">Login</a>
     </nav>
   </div>
@@ -159,6 +159,88 @@
         Join people who stopped guessing and started growing.
       </p>
       <a href="/frontend/customer_register/customer_register.html" class="btn">Start Free Today</a>
+    </div>
+  </div>
+</section>
+
+<!-- =========================
+     CONTACT US SECTION
+========================= -->
+<section class="contact-us">
+  <div class="container">
+    <h2 class="section-title">Contact Us</h2>
+    <p class="section-subtitle">Have questions? Reach out to us and we'll get back to you shortly.</p>
+
+    <div class="contact-grid">
+      <!-- Contact Form -->
+      <form class="contact-form" id="contactForm">
+  <input type="text" name="name" placeholder="Your Name" required>
+  <input type="email" name="email" placeholder="Your Email" required>
+  <textarea name="message" rows="5" placeholder="Your Message" required></textarea>
+  <button type="submit" class="btn">Send Message</button>
+</form>
+
+<script>
+  const form = document.getElementById('contactForm');
+
+  form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    // Collect form data
+    const formData = {
+      name: form.name.value,
+      email: form.email.value,
+      message: form.message.value
+    };
+
+    try {
+      const response = await fetch("http://127.0.0.1:8000/contact/", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken') // Django CSRF
+        },
+        body: JSON.stringify(formData)
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        alert('Message sent successfully!');
+        form.reset();
+      } else {
+        alert('Error: ' + result.error);
+      }
+    } catch (err) {
+      alert('Server error: ' + err.message);
+    }
+  });
+
+  // CSRF helper function for Django
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.startsWith(name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+</script>
+
+
+      <!-- Contact Info -->
+      <div class="contact-info">
+        <h4>Our Contact Info</h4>
+        <p>Email: support@budgetwala.com</p>
+        <p>Phone: +91 8888888888</p>
+        <p>Address: ITP Cypress, Hinjewadi, Pune, India</p>
+      </div>
     </div>
   </div>
 </section>

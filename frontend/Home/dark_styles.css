@@ -2,31 +2,30 @@
    GLOBAL VARIABLES
 ========================= */
 :root {
-  /* Base background (bluish dark) */
-  --bg-dark: #0e1629;
+  --bg-dark: #05070d;
 
   /* Glass / UI */
-  --glass: rgba(255,255,255,0.12);
-  --glass-border: rgba(255,255,255,0.22);
+  --glass: rgba(255,255,255,0.08);
+  --glass-border: rgba(255,255,255,0.15);
 
   /* Brand */
-  --primary: #8b8cff;
-  --secondary: #38f2d6;
+  --primary: #7c7cff;
+  --secondary: #2dd4bf;
   --accent: #22c55e;
 
   /* Text */
-  --text: #e8ebf1;
-  --muted: #c0c7d4;
+  --text: #e5e7eb;
+  --muted: #9ca3af;
 
-  /* Bluish overlays (LIGHT & AIRY) */
-  --overlay-header: rgba(14,22,41,0.55);
-  --overlay-footer: rgba(20,30,60,0.35);
+  /* Overlays (DO NOT CHANGE YET) */
+  --overlay-header: rgba(0,0,0,0.35);
+  --overlay-footer: rgba(0,0,0,0.3);
 
-  --overlay-hero-top: rgba(14,22,41,0.15);
-  --overlay-hero-bottom: rgba(20,30,60,0.55);
+  --overlay-hero-top: rgba(5,7,13,0.4);
+  --overlay-hero-bottom: rgba(5,7,13,0.9);
 
-  --overlay-story-top: rgba(20,30,60,0.35);
-  --overlay-story-bottom: rgba(30,45,90,0.55);
+  --overlay-story-top: rgba(5,7,13,0.75);
+  --overlay-story-bottom: rgba(5,7,13,0.9);
 }
 
 /* =========================
@@ -40,12 +39,7 @@
 
 body {
   font-family: "Inter", system-ui, sans-serif;
-  background: linear-gradient(
-    to bottom,
-    #0e1629 0%,
-    #121c34 40%,
-    #182448 100%
-  );
+  background: var(--bg-dark);
   color: var(--text);
 }
 
@@ -68,7 +62,7 @@ header {
   width: 100%;
   top: 0;
   z-index: 20;
-  backdrop-filter: blur(14px);
+  backdrop-filter: blur(12px);
   background: var(--overlay-header);
 }
 
@@ -95,14 +89,14 @@ header {
 }
 
 .nav-right a:hover {
-  opacity: 0.85;
+  opacity: 0.8;
 }
 
 .btn {
   padding: 12px 22px;
-  border-radius: 12px;
+  border-radius: 10px;
   background: linear-gradient(135deg, var(--primary), var(--secondary));
-  color: #020617;
+  color: black;
   font-weight: 700;
 }
 
@@ -149,23 +143,18 @@ header {
   font-size: 56px;
   line-height: 1.1;
   margin-bottom: 20px;
-  text-shadow:
-    0 2px 5px rgba(0, 0, 0, 0.45),
-    0 2px 5px rgba(0, 0, 0, 0.35);
 }
 
 .hero-text span {
   background: linear-gradient(135deg, var(--primary), var(--secondary));
   -webkit-background-clip: text;
-  color:aqua;
+  color: transparent;
 }
 
 .hero-text p {
   font-size: 20px;
-  color: aliceblue;
+  color: var(--muted);
   margin-bottom: 30px;
-  text-shadow:
-    0 3px 10px rgba(0, 0, 0, 0.4);
 }
 
 /* =========================
@@ -183,8 +172,8 @@ header {
 
 .feature-card {
   background: var(--glass);
-  backdrop-filter: blur(18px);
-  border-radius: 20px;
+  backdrop-filter: blur(14px);
+  border-radius: 18px;
   padding: 32px;
   border: 1px solid var(--glass-border);
 }
@@ -199,7 +188,7 @@ header {
 }
 
 /* =========================
-   AUTH
+   AUTH PAGES
 ========================= */
 .auth {
   min-height: 100vh;
@@ -210,15 +199,12 @@ header {
 
 .auth-box {
   background: var(--glass);
-  backdrop-filter: blur(22px);
-  border-radius: 22px;
+  backdrop-filter: blur(18px);
+  border-radius: 20px;
   padding: 42px;
   width: 100%;
   max-width: 420px;
-  border: 0px solid var(--glass-border);
-  box-shadow:
-    0 20px 40px rgba(10, 20, 50, 0.35),
-    0 8px 16px rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--glass-border);
 }
 
 .auth-box h2 {
@@ -235,7 +221,7 @@ header {
   width: 100%;
   padding: 14px;
   margin-bottom: 16px;
-  background: rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.1);
   border: none;
   border-radius: 10px;
   color: white;
@@ -256,9 +242,9 @@ header {
 
 .card {
   background: var(--glass);
-  backdrop-filter: blur(18px);
+  backdrop-filter: blur(14px);
   padding: 30px;
-  border-radius: 20px;
+  border-radius: 18px;
   border: 1px solid var(--glass-border);
 }
 
@@ -325,150 +311,9 @@ header {
 ========================= */
 footer {
   text-align: center;
-  padding: 60px 0;
+  padding: 50px 0;
   color: var(--muted);
   font-size: 14px;
-  background: linear-gradient(
-    to bottom,
-    rgba(30,45,90,0.35),
-    rgba(40,60,120,0.25)
-  );
+  background: var(--overlay-footer);
   margin-top: 80px;
-}
-
-/* =========================
-   ABOUT US
-========================= */
-.about-us {
-  padding: 100px 0;
-  background: linear-gradient(135deg, #0e1629, #182448); /* bluish-light dark background */
-}
-
-.about-us .section-title {
-  font-size: 42px;
-  text-align: center;         /* centers title */
-  margin-bottom: 16px;
-  color: var(--text);
-  text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* small black edge for readability */
-}
-
-.about-us .section-subtitle {
-  text-align: center;         /* centers subtitle */
-  color: var(--muted);
-  margin-bottom: 50px;
-  font-size: 18px;
-}
-
-.about-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 30px;
-  align-items: start;
-}
-
-.about-card {
-  background: var(--glass);
-  backdrop-filter: blur(20px);
-  border-radius: 20px;
-  padding: 32px;
-  border: 1px solid var(--glass-border);
-}
-
-.about-card h4 {
-  font-size: 22px;
-  color: var(--text);
-  margin-bottom: 16px;
-}
-
-.about-card p {
-  font-size: 16px;
-  color: var(--muted);
-  line-height: 1.6;
-}
-
-
-
-/* =========================
-   CONTACT US
-========================= */
-.contact-us {
-  padding: 100px 0;
-  background: linear-gradient(135deg, #0e1629, #182448);
-}
-
-.contact-us .section-title {
-  font-size: 42px;
-  text-align: center;
-  margin-bottom: 16px;
-  color: var(--text);
-  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
-}
-
-.contact-us .section-subtitle {
-  text-align: center;
-  color: var(--muted);
-  margin-bottom: 50px;
-  font-size: 18px;
-}
-
-.contact-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 40px;
-  align-items: start;
-}
-
-.contact-form,
-.contact-info {
-  background: var(--glass);
-  backdrop-filter: blur(20px);
-  border-radius: 20px;
-  padding: 32px;
-  border: 1px solid var(--glass-border);
-}
-
-.contact-form input,
-.contact-form textarea {
-  width: 100%;
-  padding: 14px;
-  margin-bottom: 16px;
-  border: none;
-  border-radius: 10px;
-  background: rgba(255,255,255,0.12);
-  color: white;
-  font-size: 16px;
-}
-
-.contact-form input::placeholder,
-.contact-form textarea::placeholder {
-  color: var(--muted);
-}
-
-.contact-form button {
-  width: 100%;
-  padding: 14px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, var(--primary), var(--secondary));
-  border: none;
-  font-weight: 700;
-  color: #020617;
-  cursor: pointer;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.contact-form button:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 24px rgba(10,20,50,0.4);
-}
-
-.contact-info h4 {
-  font-size: 22px;
-  margin-bottom: 20px;
-  color: var(--text);
-}
-
-.contact-info p {
-  font-size: 16px;
-  color: var(--muted);
-  margin-bottom: 10px;
 }
