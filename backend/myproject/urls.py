@@ -47,5 +47,6 @@ urlpatterns = [
     path('plan/', include('plan.urls')), 
     path('transaction/', include('transaction.urls')), 
     path('deposite/', include('deposite.urls')),
-    path('expense/', include('expense.urls')), # This is the root path '/' that returns a welcome message
+    path('expense/', include('expense.urls')),
+    path('', include('contact.urls')),
 ]

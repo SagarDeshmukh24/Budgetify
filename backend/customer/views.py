@@ -69,9 +69,6 @@ class LoginAPI(APIView):
             
             serializer = CustomerSerializer(customer)
             # return Response(serializer.data)
-            print(serializer.data)
-            print(customer.password, customer.phone)
-        
             # if password == serializer.data.password:
             if password == customer.password or check_password(password, customer.password):
                 return Response(
@@ -236,7 +233,7 @@ def verify_otp(request):
             status=status.HTTP_400_BAD_REQUEST
         )
 
-    if entered_otp == saved_otp:
+    if str(entered_otp) == saved_otp:
         return Response(
             {"message": "OTP verified"},
             status=status.HTTP_200_OK
@@ -279,3 +276,63 @@ def reset_password(request):
         {"message": "Password reset successful"},
         status=status.HTTP_200_OK
     )
+
+import pandas as pd
+
+class UploadCustomerCSV(APIView):
+
+    def post(self, request):
+        file = request.FILES.get('file')
+
+        if not file:
+            return Response(
+                {"error": "No file provided"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not file.name.endswith('.csv'):
+            return Response(
+                {"error": "File must be a CSV"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            df = pd.read_csv(file)
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Replace NaN with empty string
+
+        success_count = 0
+        failed_rows = []
+
+        for index, row in df.iterrows():
+            data = {
+                "name": row["name"],
+                "email": row["email"],
+                "phone": str(row["phone"]),
+                "password": row["password"],
+                "type": row["type"]
+            }
+            serializer = CustomerSerializer(data=data)
+
+            if serializer.is_valid():
+                try:
+                    serializer.save()
+                    success_count += 1
+                except Exception as e:
+                    row['error'] = str(e)
+                    failed_rows.append(row)
+            else:
+                row['error'] = serializer.errors
+                failed_rows.append(row)
+
+        return Response({
+            "message": "CSV processed",
+            "inserted": success_count,
+            "failed": len(failed_rows),
+            "errors": failed_rows
+        }, status=status.HTTP_201_CREATED)
