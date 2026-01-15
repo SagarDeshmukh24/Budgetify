@@ -16,18 +16,20 @@ Including another URLconf
 """
 
 from django.urls import path
-from .views import CustomerAPI, LoginAPI, forgot_password, verify_otp, reset_password, UploadCustomerCSV
+from .views import CustomerAPI, CustomerLoginAPI, CustomerForgotPasswordAPI, CustomerVerifyOTPAPI, CustomerResetPasswordAPI
 from . import views
+
 
 urlpatterns = [
     path('', CustomerAPI.as_view(), name='root'),
     path('customer/', views.CustomerAPI.as_view(), name='customer_api'),
-    path('<int:id>/', CustomerAPI.as_view(), name='customer_detail'),
-    path('login/',LoginAPI.as_view(), name='login'),
-    path('register/',views.CustomerAPI.as_view(), name='customer_api'),
-    path('forgot_password/', forgot_password),
-    path('verify_otp/', verify_otp),
-    path('reset_password/', reset_password),
-    path('upload_csv/', UploadCustomerCSV.as_view(), name='upload_customer_csv'),
+    path('<int:id>/', CustomerAPI.as_view(), name='_detail'), 
+
+    path('login/', CustomerLoginAPI.as_view(), name='login'),
+    path('register/', views.CustomerAPI.as_view(), name='customer_api'),
+    
+    path('forgot-password/', CustomerForgotPasswordAPI.as_view()),
+    path('verify-otp/', CustomerVerifyOTPAPI.as_view()),
+    path('reset-password/', CustomerResetPasswordAPI.as_view()),
 ]
 

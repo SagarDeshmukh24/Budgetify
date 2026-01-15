@@ -2,33 +2,28 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Budgetwala – Smart Budgeting Tool</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="contact.js">
 </head>
 <body>
 
 <!-- NAVBAR -->
 <header>
   <div class="container nav">
-    <!-- Left -->
     <h1 class="logo">Budgetwala</h1>
-
-    <!-- Right -->
     <nav class="nav-right">
-      <a href="/frontend/Home/about.html">About Us</a>
-      <a href="https://www.ft.com/personal-finance" target="_blank">Financial News</a>
-      <a href="/frontend/customer_login/customer_login.html" class="btn">Login</a>
+      <a href="about.html">About Us</a>
+      <a href="https://www.ft.com/personal-finance" target="_blank">Personal Finance</a>
+      <a href="#" class="btn">Login</a>
     </nav>
   </div>
 </header>
 
-
 <!-- HERO SECTION -->
 <section class="hero">
-  <video autoplay muted loop playsinline>
-    <source src="mm.mp4" type="video/mp4">
-  </video>
-
   <div class="hero-content container">
     <div class="hero-text">
       <h2>
@@ -39,13 +34,13 @@
         Budgetwala helps you understand, control, and grow your money —
         without spreadsheets, stress, or guesswork.
       </p>
-      <a href="/frontend/customer_register/customer_register.html" class="btn">Create Free Account</a>
+      <a href="#" class="btn">Create Free Account</a>
     </div>
   </div>
 </section>
 
 <!-- TRUST STRIP -->
-<section class="features container" style="padding-top:60px">
+<section class="features container">
   <div class="feature-grid">
     <div class="feature-card">
       <h4>💳 All Accounts, One View</h4>
@@ -62,39 +57,27 @@
   </div>
 </section>
 
-<!-- STORY / PROBLEM SECTION -->
- 
-<!-- STORY / PROBLEM SECTION -->
+<!-- STORY SECTION -->
 <section class="story-section">
-  <div class="story-overlay"></div>
-
   <div class="container story-content">
     <h3>
       Ever wonder where your money<br>
       <span>actually goes?</span>
     </h3>
-
     <p>
       You earn. You spend. But somehow, at the end of the month,
-      there’s confusion instead of confidence.
+      there's confusion instead of confidence.
     </p>
-
     <p>
       Budgetwala replaces guesswork with clarity —
       so every rupee has a purpose and every decision feels intentional.
     </p>
-
   </div>
 </section>
 
-
-
 <!-- FEATURES DEEP DIVE -->
 <section class="features container">
-  <h3 style="text-align:center; font-size:40px; margin-bottom:50px">
-    Everything you need to stay in control
-  </h3>
-
+  <h3 class="section-title">Everything you need to stay in control</h3>
   <div class="feature-grid">
     <div class="feature-card">
       <h4>Smart Expense Tracking</h4>
@@ -103,7 +86,6 @@
         money actually goes.
       </p>
     </div>
-
     <div class="feature-card">
       <h4>Flexible Budgets</h4>
       <p>
@@ -111,14 +93,12 @@
         not rigid limits that fail mid-month.
       </p>
     </div>
-
     <div class="feature-card">
       <h4>Net Worth Dashboard</h4>
       <p>
         Track assets, liabilities, and long-term growth in one clean view.
       </p>
     </div>
-
     <div class="feature-card">
       <h4>Goal Planning</h4>
       <p>
@@ -126,14 +106,12 @@
         with clear progress tracking.
       </p>
     </div>
-
     <div class="feature-card">
       <h4>Monthly Insights</h4>
       <p>
         Understand trends, habits, and opportunities to improve every month.
       </p>
     </div>
-
     <div class="feature-card">
       <h4>Designed for Peace of Mind</h4>
       <p>
@@ -143,103 +121,41 @@
   </div>
 </section>
 
-<!-- CALL TO ACTION -->
-<section class="hero" style="height:70vh">
-  <!--<video autoplay muted loop playsinline>
-    <source src="mm.mp4" type="video/mp4">
-  </video> -->
-
-  <div class="hero-content container">
-    <div class="hero-text">
-      <h2>
-        Your money.<br>
-        Finally <span>working for you</span>.
-      </h2>
-      <p>
-        Join people who stopped guessing and started growing.
-      </p>
-      <a href="/frontend/customer_register/customer_register.html" class="btn">Start Free Today</a>
-    </div>
+<!-- CTA SECTION -->
+<section class="cta-section">
+  <div class="container cta-content">
+    <h2>
+      Your money.<br>
+      Finally working for you.
+    </h2>
+    <p>
+      Join people who stopped guessing and started growing.
+    </p>
+    <a href="#" class="btn">Start Free Today</a>
   </div>
 </section>
 
-<!-- =========================
-     CONTACT US SECTION
-========================= -->
-<section class="contact-us">
+<!-- CONTACT US SECTION -->
+<section class="contact-us" id="contact">
   <div class="container">
     <h2 class="section-title">Contact Us</h2>
-    <p class="section-subtitle">Have questions? Reach out to us and we'll get back to you shortly.</p>
+    <p style="text-align: center; color: var(--text-muted); margin-bottom: 50px; font-size: 18px;">
+      Have questions? Reach out to us and we'll get back to you shortly.
+    </p>
 
     <div class="contact-grid">
-      <!-- Contact Form -->
       <form class="contact-form" id="contactForm">
-  <input type="text" name="name" placeholder="Your Name" required>
-  <input type="email" name="email" placeholder="Your Email" required>
-  <textarea name="message" rows="5" placeholder="Your Message" required></textarea>
-  <button type="submit" class="btn">Send Message</button>
-</form>
+        <input type="text" name="name" placeholder="Your Name" required>
+        <input type="email" name="email" placeholder="Your Email" required>
+        <textarea name="message" rows="5" placeholder="Your Message" required></textarea>
+        <button type="submit">Send Message</button>
+      </form>
 
-<script>
-  const form = document.getElementById('contactForm');
-
-  form.addEventListener('submit', async function(e) {
-    e.preventDefault();
-
-    // Collect form data
-    const formData = {
-      name: form.name.value,
-      email: form.email.value,
-      message: form.message.value
-    };
-
-    try {
-      const response = await fetch("http://127.0.0.1:8000/contact/", {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': getCookie('csrftoken') // Django CSRF
-        },
-        body: JSON.stringify(formData)
-      });
-
-      const result = await response.json();
-
-      if (response.ok) {
-        alert('Message sent successfully!');
-        form.reset();
-      } else {
-        alert('Error: ' + result.error);
-      }
-    } catch (err) {
-      alert('Server error: ' + err.message);
-    }
-  });
-
-  // CSRF helper function for Django
-  function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-      const cookies = document.cookie.split(';');
-      for (let i = 0; i < cookies.length; i++) {
-        const cookie = cookies[i].trim();
-        if (cookie.startsWith(name + '=')) {
-          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-          break;
-        }
-      }
-    }
-    return cookieValue;
-  }
-</script>
-
-
-      <!-- Contact Info -->
       <div class="contact-info">
         <h4>Our Contact Info</h4>
-        <p>Email: support@budgetwala.com</p>
-        <p>Phone: +91 8888888888</p>
-        <p>Address: ITP Cypress, Hinjewadi, Pune, India</p>
+        <p>📧 support@budgetwala.com</p>
+        <p>📞 +91 8888888888</p>
+        <p>📍 ITP Cypress, Hinjewadi, Pune, India</p>
       </div>
     </div>
   </div>
@@ -250,6 +166,6 @@
   © All Rights Reserved 2026 @Budgetwala | Smart Budgeting Tool | The Unicorn Team
 </footer>
 
+
 </body>
 </html>
-

@@ -1,338 +1,254 @@
+import random
+from datetime import timedelta
+
+import requests
+from django.conf import settings
+from django.utils import timezone
+from django.contrib.auth.hashers import make_password, check_password
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from django.contrib.auth.hashers import check_password
 
-from .models import Customer
+from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
+from rest_framework_simplejwt.exceptions import TokenError
+
+from .models import Customer, CustomerPasswordResetOTP
 from .serializer import CustomerSerializer
 
-# Customer API View
+
+OTP_EXP_MINUTES = 5
+MAX_OTP_ATTEMPTS = 5
+
+
+# --------------------------------------------------
+# CUSTOMER CRUD
+# --------------------------------------------------
 class CustomerAPI(APIView):
-    
+
     def post(self, request):
-        serializer = CustomerSerializer(data=request.data)
+        data = request.data.copy()
+        data['password'] = make_password(data['password'])
+
+        serializer = CustomerSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request, id=None):
         if id:
             try:
-                customer = Customer.objects.get(id=id)  # Corrected to .objects
+                customer = Customer.objects.get(id=id)
             except Customer.DoesNotExist:
-                return Response({'error': "Not Found"}, status=status.HTTP_404_NOT_FOUND)
+                return Response({"error": "Not Found"}, status=404)
 
-            serializer = CustomerSerializer(customer)
-            return Response(serializer.data)
+            return Response(CustomerSerializer(customer).data)
 
-        customers = Customer.objects.all()  # Corrected to .objects
-        serializer = CustomerSerializer(customers, many=True)
-        return Response(serializer.data)
+        customers = Customer.objects.all()
+        return Response(CustomerSerializer(customers, many=True).data)
 
     def put(self, request, id):
-        if id:
-            try:
-                customer = Customer.objects.get(id=id)  # Corrected to .objects
-            except Customer.DoesNotExist:  # Corrected exception type
-                return Response({'error': "Not Found"}, status=status.HTTP_404_NOT_FOUND)
+        try:
+            customer = Customer.objects.get(id=id)
+        except Customer.DoesNotExist:
+            return Response({"error": "Not Found"}, status=404)
 
-            serializer = CustomerSerializer(customer, data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data)
-            
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        data = request.data.copy()
+        if data.get("password"):
+            data["password"] = make_password(data["password"])
+
+        serializer = CustomerSerializer(customer, data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+
+        return Response(serializer.errors, status=400)
 
     def delete(self, request, id):
         try:
             customer = Customer.objects.get(id=id)
         except Customer.DoesNotExist:
-            return Response({'error': "Not Found"}, status=status.HTTP_404_NOT_FOUND)
-        customer.delete()
-        return Response({"message": "Customer Deleted"}, status=status.HTTP_204_NO_CONTENT)
+            return Response({"error": "Not Found"}, status=404)
 
-# Login API View
-class LoginAPI(APIView):
+        customer.delete()
+        return Response({"message": "Customer Deleted"}, status=204)
+
+
+# --------------------------------------------------
+# CUSTOMER LOGIN
+# --------------------------------------------------
+class CustomerLoginAPI(APIView):
+
     def post(self, request):
-        email = request.data.get('email')
-        password = request.data.get('password')
+        email = request.data.get("email")
+        password = request.data.get("password")
 
         if not email or not password:
+            return Response({"error": "Email and password required"}, status=400)
+
+        try:
+            customer = Customer.objects.get(email=email)
+
+            if check_password(password, customer.password):
+                refresh = RefreshToken.for_user(customer)
+
+                return Response({
+                    "message": "Login successful",
+                    "access": str(refresh.access_token),
+                    "refresh": str(refresh),
+                    "customer": CustomerSerializer(customer).data
+                })
+
+            return Response({"error": "Invalid credentials"}, status=400)
+
+        except Customer.DoesNotExist:
+            return Response({"error": "Invalid credentials"}, status=400)
+
+
+# --------------------------------------------------
+# TELEGRAM MESSAGE HELPER
+# --------------------------------------------------
+def send_telegram_message(chat_id, text):
+    url = f"https://api.telegram.org/bot{settings.TELEGRAM_BOT_TOKEN}/sendMessage"
+    payload = {"chat_id": chat_id, "text": text}
+    try:
+        return requests.post(url, json=payload, timeout=5).ok
+    except Exception:
+        return False
+
+
+# --------------------------------------------------
+# FORGOT PASSWORD → SEND OTP
+# --------------------------------------------------
+class CustomerForgotPasswordAPI(APIView):
+
+    def post(self, request):
+        email = request.data.get("email")
+
+        if not email:
+            return Response({"error": "email required"}, status=400)
+
+        try:
+            customer = Customer.objects.get(email=email)
+        except Customer.DoesNotExist:
+            return Response({"message": "If account exists, OTP sent"})
+
+        if not customer.telegram_chat_id:
+            return Response({"error": "Telegram not linked"}, status=400)
+
+        otp = f"{random.randint(0, 999999):06d}"
+        expires_at = timezone.now() + timedelta(minutes=OTP_EXP_MINUTES)
+
+        CustomerPasswordResetOTP.objects.create(
+            customer=customer,
+            otp=otp,
+            expires_at=expires_at
+        )
+
+        send_telegram_message(
+            customer.telegram_chat_id,
+            f"🔐 OTP: {otp} (valid {OTP_EXP_MINUTES} minutes)"
+        )
+
+        return Response({"message": "If account exists, OTP sent"})
+
+
+# --------------------------------------------------
+# VERIFY OTP
+# --------------------------------------------------
+class CustomerVerifyOTPAPI(APIView):
+    def post(self, request):
+        email = request.data.get('email')
+        otp = request.data.get('otp')
+
+        if not email or not otp:
             return Response(
-                {"error": "Email and password are required"},
+                {"error": "email and otp required"},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
         try:
             customer = Customer.objects.get(email=email)
-            
-            serializer = CustomerSerializer(customer)
-            # return Response(serializer.data)
-            # if password == serializer.data.password:
-            if password == customer.password or check_password(password, customer.password):
-                return Response(
-                    {
-                        "message": "Login successful",
-                        "user": serializer.data
-                    },
-                    status=status.HTTP_200_OK
-                )
-            else: 
-                return Response(
-                    {"error": "User not found"},
-                    status=status.HTTP_404_NOT_FOUND
-                )
-        except Customer.DoesNotExist:
+            reset = CustomerPasswordResetOTP.objects.filter(
+                customer=customer
+            ).latest('created_at')
+        except (Customer.DoesNotExist, CustomerPasswordResetOTP.DoesNotExist):
             return Response(
-                {"error": "User not found"},
-                status=status.HTTP_404_NOT_FOUND
+                {"error": "Invalid OTP"},
+                status=status.HTTP_400_BAD_REQUEST
             )
 
-# OTP Generation Function        
-import random
+        if reset.is_used or reset.is_expired():
+            return Response(
+                {"error": "OTP expired"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-def generate_otp():
-    return str(random.randint(100000, 999999))
+        if reset.otp != otp:
+            return Response(
+                {"error": "Invalid OTP"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-# Email OTP Function
-from django.core.mail import send_mail
-from django.conf import settings
+        token = AccessToken.for_user(customer)
+        token['purpose'] = 'password_reset'
 
-def send_email_otp(email, otp):
-    subject = "Budgetwala | Password Reset OTP"
-    message = f"""
-Hello,
+        reset.reset_token = str(token)
+        reset.is_verified = True
+        reset.is_used = False
+        reset.save()
 
-Your OTP for password reset is: {otp}
-
-This OTP is valid for 5 minutes.
-If you did not request this, please ignore this email.
-
-Regards,
-Budgetwala Team
-"""
-    send_mail(
-        subject,
-        message,
-        settings.DEFAULT_FROM_EMAIL,
-        [email],
-        fail_silently=False
-    )
-
-# Telegram OTP Function
-import requests
-from django.conf import settings
-import logging
-
-logger = logging.getLogger(__name__)
-
-def send_telegram_otp(chat_id, otp):
-    url = f"https://api.telegram.org/bot{settings.TELEGRAM_BOT_TOKEN}/sendMessage"
-
-    payload = {
-        "chat_id": chat_id,
-        "text": (
-            "🔐 Budgetwala Password Reset\n\n"
-            f"Your OTP is: {otp}\n"
-            "Valid for 5 minutes.\n\n"
-            "If you didn’t request this, ignore."
-        )
-    }
-
-    try:
-        response = requests.post(url, json=payload, timeout=5)
-
-        if response.status_code != 200:
-            logger.error("Telegram error: %s", response.text)
-            return False
-
-        return True
-
-    except requests.exceptions.RequestException as e:
-        logger.exception("Telegram request failed")
-        return False
-
-
-# Forgot Password View
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from rest_framework import status
-from django.utils import timezone
-from datetime import timedelta
-
-@api_view(['POST'])
-def forgot_password(request):
-    email = request.data.get("email")
-    telegram_chat_id = request.data.get("telegram_chat_id")
-
-    if not email or not telegram_chat_id:
         return Response(
-            {"error": "Email and Telegram Chat ID are required"},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-
-    try:
-        customer = Customer.objects.get(email=email)
-    except Customer.DoesNotExist:
-        return Response(
-            {"error": "Customer not found"},
-            status=status.HTTP_404_NOT_FOUND
-        )
-
-    # 🔥 UPDATE / SAVE TELEGRAM CHAT ID
-    customer.telegram_chat_id = telegram_chat_id
-    customer.save()
-
-    # Generate OTP
-    otp = generate_otp()
-
-    # Save OTP in session
-    request.session["reset_otp"] = otp
-    request.session["otp_expiry"] = (
-        timezone.now() + timedelta(minutes=5)
-    ).isoformat()
-    request.session["reset_user"] = customer.id
-
-    # Send OTP via Telegram
-    sent = send_telegram_otp(telegram_chat_id, otp)
-
-    if not sent:
-        return Response(
-            {"error": "Failed to send OTP via Telegram"},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
-
-    return Response(
-        {"message": "OTP sent successfully via Telegram"},
-        status=status.HTTP_200_OK
-    )
-
-
-
-# Verify OTP View
-from django.utils.dateparse import parse_datetime
-
-@api_view(['POST'])
-def verify_otp(request):
-    entered_otp = request.data.get("otp")
-    saved_otp = request.session.get("reset_otp")
-    expiry = request.session.get("otp_expiry")
-
-    if not saved_otp or not expiry:
-        return Response(
-            {"error": "OTP expired"},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-
-    expiry = parse_datetime(expiry)
-
-    if timezone.now() > expiry:
-        return Response(
-            {"error": "OTP expired"},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-
-    if str(entered_otp) == saved_otp:
-        return Response(
-            {"message": "OTP verified"},
+            {"reset_token": str(token)},
             status=status.HTTP_200_OK
         )
 
-    return Response(
-        {"error": "Invalid OTP"},
-        status=status.HTTP_400_BAD_REQUEST
-    )
 
-
-# Reset Password View
-from django.contrib.auth.hashers import make_password
-
-@api_view(['POST'])
-def reset_password(request):
-    password = request.data.get("password")
-    customer_id = request.session.get("reset_user")
-
-    if not customer_id:
-        return Response(
-            {"error": "Session expired"},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-
-    try:
-        customer = Customer.objects.get(id=customer_id)
-    except Customer.DoesNotExist:
-        return Response(
-            {"error": "User not found"},
-            status=status.HTTP_404_NOT_FOUND
-        )
-
-    customer.password = make_password(password)
-    customer.save()
-
-    request.session.flush()
-
-    return Response(
-        {"message": "Password reset successful"},
-        status=status.HTTP_200_OK
-    )
-
-import pandas as pd
-
-class UploadCustomerCSV(APIView):
+# --------------------------------------------------
+# RESET PASSWORD
+# --------------------------------------------------
+class CustomerResetPasswordAPI(APIView):
+    authentication_classes = []
+    permission_classes = []
 
     def post(self, request):
-        file = request.FILES.get('file')
+        email = request.data.get("email")
+        reset_token = request.data.get("reset_token")
+        new_password = request.data.get("new_password")
 
-        if not file:
-            return Response(
-                {"error": "No file provided"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        print(email, new_password, reset_token)
+        if not email or not reset_token or not new_password:
+            return Response({"error": "missing fields"}, status=400)
 
-        if not file.name.endswith('.csv'):
-            return Response(
-                {"error": "File must be a CSV"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
         try:
-            df = pd.read_csv(file)
-        except Exception as e:
-            return Response(
-                {"error": str(e)},
-                status=status.HTTP_400_BAD_REQUEST
+            token = AccessToken(reset_token)
+            if token.get("purpose") != "password_reset":
+                raise TokenError()
+        except TokenError:
+            return Response({"error": "Invalid token"}, status=400)
+
+        try:
+            customer = Customer.objects.get(id=token["user_id"], email=email)
+            reset = CustomerPasswordResetOTP.objects.get(
+                customer=customer,
+                reset_token=reset_token,
+                is_verified=True,
+                is_used=False
             )
+        except Exception:
+            return Response({"error": "Invalid token"}, status=400)
 
-        # Replace NaN with empty string
+        customer.password = make_password(new_password)
+        customer.save()
 
-        success_count = 0
-        failed_rows = []
+        reset.is_used = True
+        reset.save()
 
-        for index, row in df.iterrows():
-            data = {
-                "name": row["name"],
-                "email": row["email"],
-                "phone": str(row["phone"]),
-                "password": row["password"],
-                "type": row["type"]
-            }
-            serializer = CustomerSerializer(data=data)
+        send_telegram_message(
+            customer.telegram_chat_id,
+            "✅ Password changed successfully"
+        )
 
-            if serializer.is_valid():
-                try:
-                    serializer.save()
-                    success_count += 1
-                except Exception as e:
-                    row['error'] = str(e)
-                    failed_rows.append(row)
-            else:
-                row['error'] = serializer.errors
-                failed_rows.append(row)
-
-        return Response({
-            "message": "CSV processed",
-            "inserted": success_count,
-            "failed": len(failed_rows),
-            "errors": failed_rows
-        }, status=status.HTTP_201_CREATED)
+        return Response({"message": "Password reset successful"})

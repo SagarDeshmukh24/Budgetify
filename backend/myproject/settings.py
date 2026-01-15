@@ -11,6 +11,9 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+import os
+from datetime import timedelta
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,8 +28,11 @@ SECRET_KEY = "django-insecure-uo431m3ii&lq=db8absrl$+o(a)kw##0ctf7x(m3&kb7jz7fe&
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'http://localhost:5500/', 'http://localhost:8000/']
 
+
+# export TELEGRAM_BOT_TOKEN='8356288691:AAFneoqDVHxF88rrFLNXbx-6ucoRVWiumm4'
+TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN', '8356288691:AAFneoqDVHxF88rrFLNXbx-6ucoRVWiumm4')
 
 # Application definition
 
@@ -36,28 +42,51 @@ INSTALLED_APPS = [
     "user",
     "plan",
     "transaction",
-    "expense",
-    "deposite",
     "rest_framework",
+    "corsheaders",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "corsheaders"
 ]
 
 MIDDLEWARE = [
-    "corsheaders.middleware.CorsMiddleware",
-    "django.middleware.common.CommonMiddleware",
+    "corsheaders.middleware.CorsMiddleware", 
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
+
+
+CORS_ALLOWED_ORIGINS = [
+    "http://127.0.0.1:5500",  # Allow frontend running at this address
+    "http://localhost:5500",   # If using localhost
+    "http://127.0.0.1:8000",   # If using localhost
+    "http://localhost:8000",   # If using localhost
+]
+
+CORS_ALLOW_ALL_ORIGINS = True
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'AUTH_HEADER_TYPES': ('Bearer',),
+}
+
+
 
 ROOT_URLCONF = "myproject.urls"
 
@@ -121,25 +150,8 @@ USE_I18N = True
 USE_TZ = True
 
 
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = "static/"
-
-CORS_ALLOWED_ORIGINS = [
-    'http://127.0.0.1:8000',
-    'http://127.0.0.1:5500'
-]
-
-
-# Email
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'theunicorn2026@gmail.com'
-EMAIL_HOST_PASSWORD = 'The_unicorn@2026'
-DEFAULT_FROM_EMAIL = 'Budgetwala <theunicorn2026@gmail.com>'
-
-# Telegram
-TELEGRAM_BOT_TOKEN = '8363925057:AAH9Wifbasml6Qp4fjoshn9r4lNgzrpeq_0'

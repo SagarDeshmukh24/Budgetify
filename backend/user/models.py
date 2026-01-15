@@ -1,15 +1,33 @@
 from django.db import models
+from django.utils import timezone
+import uuid
 
 
 class User(models.Model):
     name = models.CharField(max_length=100)
     email = models.EmailField()
     phone = models.CharField(max_length= 10)
-    password = models.CharField(max_length=20, default='')
+    password = models.TextField(max_length=220, default='')
+    reset_token = models.CharField(max_length=512, blank=True, null=True)
+    telegram_chat_id = models.CharField(max_length=50, blank=True, null=True)
+
     type = models.CharField(max_length=50, default='')
-    reset_otp = models.IntegerField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add = True)
 
     def __str__(self):
-        
         return self.name
+    
+
+
+class PasswordResetOTP(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reset_otps')
+    otp = models.CharField(max_length=6)
+    expires_at = models.DateTimeField()
+    attempts = models.IntegerField(default=0)
+    is_verified = models.BooleanField(default=False)    # OTP verified
+    is_used = models.BooleanField(default=False)        # reset completed
+    reset_token = models.CharField(max_length=64, blank=True, null=True)  # returned after verify
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def is_expired(self):
+        return timezone.now() > self.expires_at

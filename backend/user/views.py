@@ -1,116 +1,42 @@
+import random
+import uuid
+from datetime import timedelta
+
+import requests
+from django.conf import settings
+from django.utils import timezone
+from django.contrib.auth.hashers import make_password, check_password
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from django.contrib.auth.hashers import check_password
-import requests
-import random
-import json
-from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse
 
-from .models import User
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.permissions import IsAuthenticated
+
+from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.exceptions import AuthenticationFailed
+from rest_framework_simplejwt.exceptions import TokenError
+
+
+from .models import User, PasswordResetOTP
 from .serializer import UserSerializer
 
+
+OTP_EXP_MINUTES = 5
+MAX_OTP_ATTEMPTS = 5
+
 # Create your views here.
-BOT_TOKEN = "7657831643:AAEUHfryt9fUzHsXShtiOtn7U3D9_Wj1ysg"
-CHAT_ID = "8029148711"
 
-def send_telegram_message(message):
-    url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
-    data = {
-        "chat_id": CHAT_ID,
-        "text": message
-    }
-    requests.post(url, data=data)
-
-@csrf_exempt
-def forgot_password(request):
-    if request.method == "POST":
-
-        data = json.loads(request.body)
-        email = data.get("email")
-
-        # 1️⃣ email exist hai ya nahi
-        try:
-            user = User.objects.get(email=email)
-        except User.DoesNotExist:
-            return JsonResponse(
-                {"error": "Email not registered"},
-                status=400
-            )
-
-        # 2️⃣ OTP generate
-        otp = random.randint(100000, 999999)
-
-        # 3️⃣ OTP DB me save
-        user.reset_otp = otp
-        user.save()
-
-        # 4️⃣ Telegram pe OTP bhejo
-        send_telegram_message(
-            f"Your password reset OTP is: {otp}"
-        )
-
-        # 5️⃣ response
-        return JsonResponse(
-            {"message": "OTP sent to Telegram"}
-        )
-    
-@csrf_exempt
-def verify_otp(request):
-    if request.method == "POST":
-
-        data = json.loads(request.body)
-        email = data.get("email")
-        otp = data.get("otp")
-
-        try:
-            user = User.objects.get(email=email)
-        except User.DoesNotExist:
-            return JsonResponse(
-                {"error": "Invalid email"},
-                status=400
-            )
-
-        if str(user.reset_otp) != str(otp):
-            return JsonResponse(
-                {"error": "Invalid OTP"},
-                status=400,
-            )
-
-        return JsonResponse(
-            {"message": "OTP verified"}
-        )
-
-@csrf_exempt
-def reset_password(request):
-    if request.method == "POST":
-
-        data = json.loads(request.body)
-        email = data.get("email")
-        new_password = data.get("password")
-
-        try:
-            user = User.objects.get(email=email)
-        except User.DoesNotExist:
-            return JsonResponse(
-                {"error": "Invalid email"},
-                status=400
-            )
-
-        # password update
-        user.password = new_password
-        user.reset_otp = None
-        user.save()
-
-        return JsonResponse(
-            {"message": "Password reset successful"}
-        )
 
 class UserAPI(APIView):
-    
+
     def post(self, request):
-        serializer = UserSerializer(data=request.data)
+        data = request.data.copy()
+        data['password'] = make_password(data['password'])
+
+        serializer = UserSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -119,11 +45,12 @@ class UserAPI(APIView):
     def get(self, request, id=None):
         if id:
             try:
-                customer = User.objects.get(id=id)  # Corrected to .objects
+                # permission_classes = [IsAuthenticated]
+                user = User.objects.get(id=id)  # Corrected to .objects
             except User.DoesNotExist:
                 return Response({'error': "Not Found"}, status=status.HTTP_404_NOT_FOUND)
 
-            serializer = UserSerializer(customer)
+            serializer = UserSerializer(user)
             return Response(serializer.data)
 
         users = User.objects.all()  # Corrected to .objects
@@ -151,7 +78,7 @@ class UserAPI(APIView):
             return Response({'error': "Not Found"}, status=status.HTTP_404_NOT_FOUND)
         user.delete()
         return Response({"message": "Customer Deleted"}, status=status.HTTP_204_NO_CONTENT)
-
+    
 
 class LoginAPI(APIView):
     def post(self, request):
@@ -166,26 +93,18 @@ class LoginAPI(APIView):
 
         try:
             user = User.objects.get(email=email)
-            
             serializer = UserSerializer(user)
-            # return Response(serializer.data)
-            print(serializer.data)
-            print(user.password, user.phone)
-        
+            
             # if password == serializer.data.password:
             if password == user.password or check_password(password, user.password):
+                refresh = RefreshToken.for_user(user)
+
                 return Response(
                     {
                         "message": "Login successful",
+                        "access": str(refresh.access_token),
+                        "refresh": str(refresh),
                         "user": serializer.data
-                        # "user": {
-                        #     "id": serializer.data.id,
-                        #     "name": serializer.data.name,
-                        #     "email": serializer.data.email,
-                        #     "phone": serializer.data.phone,
-                        #     "type": serializer.data.type,
-                        #     "created_at": serializer.data.created_at
-                        # }
                     },
                     status=status.HTTP_200_OK
                 )
@@ -199,3 +118,229 @@ class LoginAPI(APIView):
                 {"error": "User not found"},
                 status=status.HTTP_404_NOT_FOUND
             )
+        
+
+def send_telegram_message(chat_id, text):
+    url = f"https://api.telegram.org/bot{settings.TELEGRAM_BOT_TOKEN}/sendMessage"
+    payload = {"chat_id": chat_id, "text": text}
+    try:
+        r = requests.post(url, json=payload, timeout=5)
+        return r.ok
+    except Exception:
+        return False
+
+class TelegramLinkTokenAPI(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+
+        token = uuid.uuid4().hex
+        user.reset_token = token
+        user.save()
+
+        return Response({
+            "message": "Send this to Telegram bot",
+            "telegram_command": f"/start {token}"
+        })
+
+
+
+class ForgotPasswordAPI(APIView):
+    def post(self, request):
+        email = request.data.get('email')
+
+        if not email:
+            return Response({"error": "email required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            # do NOT reveal user existence
+            return Response(
+                {"message": "If account exists, OTP sent"},
+                status=status.HTTP_200_OK
+            )
+
+        if not user.telegram_chat_id:
+            return Response(
+                {"error": "Telegram not linked"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        otp = f"{random.randint(0, 999999):06d}"
+        expires_at = timezone.now() + timedelta(minutes=5)
+
+        PasswordResetOTP.objects.create(
+            user=user,
+            otp=otp,
+            expires_at=expires_at
+        )
+
+        send_telegram_message(
+            user.telegram_chat_id,
+            f"Password reset OTP: {otp}\nValid for 5 minutes."
+        )
+
+        return Response(
+            {"message": "If account exists, OTP sent"},
+            status=status.HTTP_200_OK
+        )
+
+
+class VerifyOTPAPI(APIView):
+    def post(self, request):
+        email = request.data.get('email')
+        otp = request.data.get('otp')
+
+        if not email or not otp:
+            return Response(
+                {"error": "email and otp required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            user = User.objects.get(email=email)
+            reset = PasswordResetOTP.objects.filter(user=user).latest('created_at')
+        except (User.DoesNotExist, PasswordResetOTP.DoesNotExist):
+            return Response({"error": "Invalid OTP"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if reset.is_used or reset.is_expired():
+            return Response({"error": "OTP expired"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if reset.otp != otp:
+            return Response({"error": "Invalid OTP"}, status=status.HTTP_400_BAD_REQUEST)
+
+        token = AccessToken.for_user(user)
+        token['purpose'] = 'password_reset'
+        # token.set_exp(from_time=timezone.now(), lifetime=timedelta(minutes=5))
+        token = AccessToken.for_user(user)
+        token['purpose'] = 'password_reset'
+
+
+        reset.reset_token = str(token)   # store JWT string so DB and request can be correlated
+        reset.is_verified = True
+        reset.is_used = False
+        reset.save()
+
+        return Response(
+            {"reset_token": str(token)},
+            status=status.HTTP_200_OK
+        )
+
+
+
+class ResetPasswordAPI(APIView):
+    authentication_classes = []  # 🔑 disable DRF auth
+    permission_classes = []
+
+    def post(self, request):
+        email = request.data.get('email')
+        reset_token = request.data.get('reset_token')
+        new_password = request.data.get('new_password')
+
+        if not email or not reset_token or not new_password:
+            return Response(
+                {"error": "email, token, password required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # 1. Decode token manually
+        try:
+            token = AccessToken(reset_token)
+        except TokenError:
+            return Response({"error": "Invalid or expired token"}, status=400)
+
+        # 2. Validate purpose
+        if token.get('purpose') != 'password_reset':
+            return Response({"error": "Invalid token purpose"}, status=401)
+
+        # 3. Get user from token
+        user_id = token.get('user_id')
+        try:
+            user = User.objects.get(pk=user_id)
+        except User.DoesNotExist:
+            return Response({"error": "User not found"}, status=404)
+
+        # 4. Email safety check
+        if user.email != email:
+            return Response({"error": "Email does not match token"}, status=400)
+
+        # 5. Validate OTP record
+        try:
+            reset = PasswordResetOTP.objects.get(
+                user=user,
+                reset_token=reset_token,
+                is_verified=True,
+                is_used=False
+            )
+        except PasswordResetOTP.DoesNotExist:
+            return Response({"error": "Invalid or already-used token"}, status=400)
+
+        # 6. Reset password
+        user.password = make_password(new_password)
+        user.save()
+
+        reset.is_used = True
+        reset.save()
+
+        send_telegram_message(
+            user.telegram_chat_id,
+            "✅ Your password has been changed successfully."
+        )
+
+        return Response(
+            {"message": "Password reset successful"},
+            status=status.HTTP_200_OK
+        )
+    
+        try:
+            jwt_auth = JWTAuthentication()
+            try:
+                user_auth, validated_token = jwt_auth.authenticate(request)
+            except AuthenticationFailed:
+                return Response({"error": "Invalid or expired token"}, status=status.HTTP_401_UNAUTHORIZED)
+
+            if validated_token.get('purpose') != 'password_reset':
+                return Response({"error": "Invalid token purpose"}, status=status.HTTP_401_UNAUTHORIZED)
+
+            user = user_auth  # user object authenticated from the JWT
+
+            # Optional: ensure the email in body matches JWT user (safer)
+            if email and user.email != email:
+                return Response({"error": "Email does not match token"}, status=status.HTTP_400_BAD_REQUEST)
+
+            # find the OTP row that holds this reset_token
+            reset = PasswordResetOTP.objects.get(
+                user=user,
+                reset_token=reset_token,
+                is_verified=True,
+                is_used=False
+            )
+
+        except (PasswordResetOTP.DoesNotExist):
+            return Response({"error": "Invalid token"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+        except (User.DoesNotExist, PasswordResetOTP.DoesNotExist):
+            return Response({"error": "Invalid token"}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.password = make_password(new_password)
+        user.save()
+
+        reset.is_used = True
+        reset.save()
+
+        send_telegram_message(
+            user.telegram_chat_id,
+            "✅ Your password has been changed successfully."
+        )
+
+        return Response(
+            {"message": "Password reset successful"},
+            status=status.HTTP_200_OK
+        )
+
+
+
+
