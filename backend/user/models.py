@@ -5,7 +5,7 @@ import uuid
 
 class User(models.Model):
     name = models.CharField(max_length=100)
-    email = models.EmailField()
+    email = models.EmailField(unique=True)
     phone = models.CharField(max_length= 10)
     password = models.TextField(max_length=220, default='')
     reset_token = models.CharField(max_length=512, blank=True, null=True)

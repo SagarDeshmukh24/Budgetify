@@ -37,6 +37,9 @@ class UserAPI(APIView):
         data['password'] = make_password(data['password'])
 
         serializer = UserSerializer(data=data)
+        all_emails_list = User.objects.values_list('email', flat=True)
+        if data['email'] in all_emails_list:
+            return Response({"error": "Email already exists"}, status=status.HTTP_400_BAD_REQUEST)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)

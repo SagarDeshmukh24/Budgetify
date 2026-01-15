@@ -86,7 +86,7 @@
     }
 
     .logo {
-      font-size: 28px;
+      font-size: 40px;
       font-weight: 800;
       background: linear-gradient(135deg, var(--blue-600), var(--accent-cyan));
       -webkit-background-clip: text;
@@ -143,6 +143,12 @@
     /* =========================
        HERO SECTION
     ========================= */
+    .hero video {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
     .hero {
       position: relative;
       min-height: 100vh;
@@ -494,10 +500,10 @@
     ========================= */
     footer {
       text-align: center;
-      padding: 32px 0;
+      padding: 20px 0;
       background: white;
       color: var(--text-muted);
-      font-size: 14px;
+      font-size: 16px;
       border-top: 1px solid var(--glass-border);
     }
 
@@ -523,3 +529,56 @@
         padding: 40px 24px;
       }
     }
+
+
+    /* =========================
+      ABOUT US
+    ========================= */
+    .about-us {
+      padding: 100px 0;
+      /* bluish-light dark background */
+    }
+
+    .about-us .section-title {
+      font-size: 42px;
+      text-align: center;
+      margin-bottom: 16px;
+      color: var(--text-primary);
+      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    }
+
+    .about-us .section-subtitle {
+      text-align: center;
+      color: var(--text-muted);
+      margin-bottom: 50px;
+      font-size: 18px;
+    }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 30px;
+      align-items: start;
+    }
+
+    .about-card {
+      background: var(--glass-light);
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
+      padding: 32px;
+      border: 1px solid var(--glass-border);
+    }
+
+    .about-card h4 {
+      font-size: 22px;
+      color: var(--text-primary);
+      margin-bottom: 16px;
+    }
+
+    .about-card p {
+      font-size: 16px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+

@@ -1,40 +1,89 @@
-var token = localStorage.getItem("token");
+const app = angular.module('bugetifyApp', [])
+// angular.module('bugetifyApp', [])
+app.controller('MainController', function($scope) {
 
-if (!token) {
-    window.location.href = "http://127.0.0.1:5500/frontend/login/login.html";
-}
-var app = angular.module("myApp", []);
+    $scope.formType = 'credit';
 
-app.controller("DashboardCtrl", function ($scope) {
-  localStorage.setItem("token", response.data.token); //token liya hai kyu ki aise hi koi dashboard use na kre 
-  localStorage.setItem("username", response.data.username);
+    $scope.stats = {
+        total: 45230.50,
+        deposit: 75000.00,
+        expense: 29769.50
+    };
 
-  if (!localStorage.getItem("token")) {   // ye token use kiya hai kyu ki aise hi koi dashboard use na kre 
-    sessionStorage.clear()
-    window.location.href = "http://127.0.0.1:5500/frontend/login/login.html";
-  }
+    $scope.transactions = [
+        {
+            id: 'TXN001',
+            description: 'Salary Deposit',
+            type: 'Credit',
+            amount: 50000.00,
+            time: '2026-01-14 09:30'
+        },
+        {
+            id: 'TXN002',
+            description: 'Grocery Shopping',
+            type: 'Debit',
+            amount: 3450.00,
+            time: '2026-01-13 14:20'
+        },
+        {
+            id: 'TXN003',
+            description: 'Freelance Payment',
+            type: 'Credit',
+            amount: 25000.00,
+            time: '2026-01-12 11:15'
+        },
+        {
+            id: 'TXN004',
+            description: 'Electricity Bill',
+            type: 'Debit',
+            amount: 2340.50,
+            time: '2026-01-11 16:45'
+        },
+        {
+            id: 'TXN005',
+            description: 'Restaurant',
+            type: 'Debit',
+            amount: 1250.00,
+            time: '2026-01-10 20:30'
+        }
+    ];
 
-  $scope.username = localStorage.getItem("username");
+    $scope.newTransaction = {};
 
-  //LOGOUT FUNCTION
+    $scope.addTransaction = function () {
+        var transaction = {
+            id: $scope.newTransaction.id,
+            description: $scope.newTransaction.description,
+            type: $scope.newTransaction.type,
+            amount: parseFloat($scope.newTransaction.amount),
+            time: new Date().toLocaleString('en-IN')
+        };
 
-  $scope.logout = function () {
-    localStorage.clear();   // ya sessionStorage.clear()
-    window.location.href = "http://127.0.0.1:5500/frontend/customer_login/customer_login.html";
-  };
+        $scope.transactions.unshift(transaction);
 
-  // TEMP STATIC DATA (backend abhi nahi)
-  $scope.totalIncome = 20000;
-  $scope.totalExpense = 20000;
-  $scope.savings = $scope.totalIncome - $scope.totalExpense;
+        if (transaction.type === 'Credit') {
+            $scope.stats.deposit += transaction.amount;
+            $scope.stats.total += transaction.amount;
+        } else {
+            $scope.stats.expense += transaction.amount;
+            $scope.stats.total -= transaction.amount;
+        }
 
-  $scope.recentTransactions = [
-    { type: "Income", amount: 15000, description: "Salary" },
-    { type: "Expense", amount: 500, description: "Food" },
-    { type: "Expense", amount: 2000, description: "Shopping" },
-    { type: "Income", amount: 15000, description: "Freelance" }
-  ];
+        $scope.newTransaction = {};
+    };
+
+    $scope.$watch('formType', function(val) {
+        $scope.newTransaction.type = val === 'credit' ? 'Credit' : 'Debit';
+    });
+
+    $scope.customer_logout = function(){
+        console.log("in logout funstion")
+        localStorage.removeItem('access')
+        localStorage.removeItem('refresh')
+        localStorage.removeItem('customer')
+
+        // showAlert('Logged Successfully', 'success')
+        window.location.href = '../index.html'
+    }
 
 });
-
-

@@ -23,17 +23,3 @@ class Transaction(models.Model):
         related_name="f_customer_id",
         default=0
     )
-    
-    # deposite_id = models.ForeignKey(
-    #     Deposite,
-    #     on_delete=models.CASCADE,
-    #     related_name="f_deposite_id",
-    #     default=0
-    # )
-    # expense_id = models.ForeignKey(
-    #     Expense,
-    #     on_delete=models.CASCADE,
-    #     related_name="f_expense_id",
-    #     default=0
-    # )
-
